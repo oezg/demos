@@ -25,8 +25,10 @@ public class ReadabilityScoreApp {
     public void run(String filename) {
         String text = getText(filename);
         ui.printText(text);
+
         var stats = controller.getReadabilityStatistics(text);
         ui.printReadabilityStatistics(stats);
+
         var scoreType = ui.getReadabilityScoreType();
         var scores = controller.getReadabilityScores(scoreType);
         ui.printReadabilityScores(scores);
