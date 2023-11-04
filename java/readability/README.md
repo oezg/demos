@@ -6,6 +6,8 @@ The program outputs the score itself and an approximate age needed to comprehend
 
 The program also prints how many characters, words, sentences, syllables and polysyllables the text has.
 
+The readability score is measured according to one or all of the readability indexes listed below:
+
 1. [Automated readability index](https://en.wikipedia.org/wiki/Automated_readability_index) (ARI)
 2. [Flesch–Kincaid readability tests](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests) (FK)
 3. [Simple Measure of Gobbledygook grade](https://en.wikipedia.org/wiki/SMOG) (SMOG)
