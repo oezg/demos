@@ -30,6 +30,10 @@ public class ReadabilityScoreApp {
         var scoreType = ui.getReadabilityScoreType();
         var scores = controller.getReadabilityScores(scoreType);
         ui.printReadabilityScores(scores);
+
+        if (scoreType == ReadabilityScoreType.all) {
+            ui.printAverageEstimatedAge(scores);
+        }
     }
 
     private String getText(String filename) {

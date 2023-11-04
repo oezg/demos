@@ -1,5 +1,6 @@
 package readability;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -14,6 +15,29 @@ public class UserInterface {
 
     }
 
+    public void printText(String text) {
+        System.out.println("The text is:");
+        System.out.println(text);
+    }
+
+    public void printReadabilityStatistics(ReadabilityStatistics statistics) {
+        for (Map.Entry<String, Long> entry: statistics.getStats().entrySet()) {
+            System.out.printf("%s: %d\n", entry.getKey(), entry.getValue());
+        }
+    }
+
+    public ReadabilityScoreType getReadabilityScoreType() {
+        System.out.print("\nEnter the score you want to calculate (ARI, FK, SMOG, CL, all): ");
+        var x = scanner.nextLine();
+        System.out.println();
+        try {
+            return ReadabilityScoreType.valueOf(x);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Please enter one of the readability score names!");
+            return getReadabilityScoreType();
+        }
+    }
+
     public void printReadabilityScores(ReadabilityScore[] scores) {
         for (var score : scores) {
             System.out.printf(
@@ -25,27 +49,8 @@ public class UserInterface {
         }
     }
 
-    public ReadabilityScoreType getReadabilityScoreType() {
-        System.out.print("Enter the score you want to calculate (ARI, FK, SMOG, CL, all): ");
-        var x = scanner.nextLine();
-        System.out.println();
-        try {
-            return ReadabilityScoreType.valueOf(x);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Please enter one of the readability score names!");
-            return getReadabilityScoreType();
-        }
-    }
-
-    public void printText(String text) {
-        System.out.println("The text is:");
-        System.out.println(text);
-        System.out.println();
-    }
-
-    public void printReadabilityStatistics(ReadabilityStatistics statistics) {
-        for (Map.Entry<String, Long> entry: statistics.getStats().entrySet()) {
-            System.out.printf("%s: %d\n", entry.getKey(), entry.getValue());
-        }
+    public void printAverageEstimatedAge(ReadabilityScore[] scores) {
+        var averageAge = Arrays.stream(scores).mapToDouble(ReadabilityScore::ageEstimate).average().orElse(0);
+        System.out.printf("\nThis text should be understood in average by %.2f-year-olds.\n", averageAge);
     }
 }
