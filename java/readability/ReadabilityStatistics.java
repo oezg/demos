@@ -14,5 +14,4 @@ public record ReadabilityStatistics(long wordCount, long sentenceCount, long cha
             put("Polysyllables", polysyllableCount);
         }};
     }
-
 }
