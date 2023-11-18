@@ -1,5 +1,6 @@
 package minesweeper;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -9,12 +10,16 @@ public class Main {
     private static final int FIELD_HEIGHT = 9;
     private static final char MINE = 'X';
     private static final char SAFE_CELL = '.';
-    private static final Scanner scanner = new Scanner(System.in);
-    private static final Random random = new Random();
+    private static final Scanner SCANNER = new Scanner(System.in);
+    private static final Random RANDOM = new Random();
+    private static final char[][] FIELD = new char[FIELD_HEIGHT][FIELD_WIDTH];
 
 
     public static void main(String[] args) {
-        printField(getMinedField(createField(), getNumberOfMines()));
+        initializeField();
+        mineField(getNumberOfMines());
+        changeEmptyCellsToCountOfAdjacentMines();
+        printField();
     }
 
     /**
@@ -26,7 +31,7 @@ public class Main {
         System.out.print("How many mines do you want on the field? ");
 
         try {
-            int number = scanner.nextInt();
+            int number = SCANNER.nextInt();
             if (number < 0) {
                 throw new IllegalArgumentException("Number of mines cannot be negative.");
             } else if (number > FIELD_WIDTH * FIELD_HEIGHT) {
@@ -43,61 +48,145 @@ public class Main {
     /**
      * Put given number of mines into the given field.
      *
-     * @param field - 2D array of cells
      * @param numberOfMines - user input number of mines
-     * @return - the field with mines
      */
-    private static char[][] getMinedField(char[][] field, int numberOfMines) {
+    private static void mineField(int numberOfMines) {
         for (int i = 0; i < numberOfMines; i++) {
-            mineField(field);
+            mineRandomCell();
         }
-
-        return field;
     }
 
     /**
      * Mine a random cell in the field recursively
-     *
-     * @param field - 2D array of cells
      */
-    private static void mineField(char[][] field) {
-        int i = random.nextInt(FIELD_HEIGHT);
-        int j = random.nextInt(FIELD_WIDTH);
-        if (field[i][j] == SAFE_CELL) {
-            field[i][j] = MINE;
+    private static void mineRandomCell() {
+        int i = RANDOM.nextInt(FIELD_HEIGHT);
+        int j = RANDOM.nextInt(FIELD_WIDTH);
+        if (FIELD[i][j] == SAFE_CELL) {
+            FIELD[i][j] = MINE;
         } else {
-            mineField(field);
+            mineRandomCell();
         }
     }
 
     /**
-     * Create a field with safe cells.
-     *
-     * @return field - 2D array of cells
+     * Initialize the field with safe cells.
      */
-    private static char[][] createField() {
-        var field = new char[FIELD_HEIGHT][FIELD_WIDTH];
-
+    private static void initializeField() {
         for (int i = 0; i < FIELD_HEIGHT; i++) {
             for (int j = 0; j < FIELD_WIDTH; j++) {
-                field[i][j] = SAFE_CELL;
+                FIELD[i][j] = SAFE_CELL;
             }
         }
-
-        return field;
     }
 
     /**
      * Print the field.
-     *
-     * @param field - 2D array of cells
      */
-    private static void printField(char[][] field) {
-        for (var row: field) {
+    private static void printField() {
+        for (var row: FIELD) {
             for (char cell : row) {
                 System.out.print(cell);
             }
             System.out.println();
         }
+    }
+
+    /**
+     * Update each cell with the count of mines in adjacent cells.
+     */
+    private static void changeEmptyCellsToCountOfAdjacentMines() {
+        for (int row = 0; row < FIELD_HEIGHT; row++) {
+            for (int col = 0; col < FIELD_WIDTH; col++) {
+
+                // Do not change mines
+                if (FIELD[row][col] == 'X') {
+                    continue;
+                }
+
+                updateCellWithCountOfAdjacentMines(row, col);
+            }
+        }
+    }
+
+    /**
+     * Update cell with the count of mines in adjacent cells.
+     *
+     * @param row - from top
+     * @param col - from left
+     */
+    private static void updateCellWithCountOfAdjacentMines(int row, int col) {
+        // Count the mines in the adjacent cells
+        int adjacentMines = getAdjacentCells(row, col).stream().mapToInt(x -> x == 'X' ? 1 : 0).sum();
+        if (adjacentMines > 0) {
+
+            // Updating the cell with the number of adjacent mines
+            FIELD[row][col] = (char)('0' + adjacentMines);
+        }
+    }
+
+    /**
+     * Find neighbors of each cell.
+     *
+     * @param row - row number of cell from top
+     * @param col - column number of cell from left
+     * @return - a list of neighboring chars
+     */
+    private static ArrayList<Character> getAdjacentCells(int row, int col) {
+        var adjacentCells = new ArrayList<Character>();
+
+        // Find coordinates of the top left corner of the 3x3 neighbors matrix relative to the field
+        var top = row - 1;
+        var left = col - 1;
+        for (int offsetRow = 0; offsetRow < 3; offsetRow++) {
+            for (int offsetCol = 0; offsetCol < 3; offsetCol++) {
+                if (isAdjacent(offsetRow, offsetCol, top, left)) {
+
+                    // Append the cell if an adjacent cell is found
+                    adjacentCells.add(FIELD[offsetRow+top][offsetCol+left]);
+                }
+            }
+        }
+
+        return adjacentCells;
+    }
+
+    /**
+     * Check if the cell is different from the current cell, and it is within the field.
+     *
+     * @param offsetRow - offset from top of the 3x3 neighbors matrix.
+     * @param offsetCol - offset from left of the 3x3 neighbors matrix.
+     * @param top - top of the 3x3 neighbors matrix.
+     * @param left - left of the 3x3 neighbors matrix.
+     * @return - true if the cell is a neighbor.
+     */
+    private static boolean isAdjacent(int offsetRow, int offsetCol, int top, int left) {
+
+        // Cell is not a neighbor of its own
+        if (offsetRow == 1 && offsetCol == 1) {
+            return false;
+        }
+
+        // Top row is in the field
+        if (offsetRow + top < 0) {
+            return false;
+        }
+
+        // Left column is in the field
+        if (offsetCol + left < 0) {
+            return false;
+        }
+
+        // Bottom row is in the field
+        if (offsetRow + top >= FIELD_HEIGHT) {
+            return false;
+        }
+
+        // Right column is in the field
+        if (offsetCol + left >= FIELD_WIDTH) {
+            return false;
+        }
+
+        return true;
     }
 }
