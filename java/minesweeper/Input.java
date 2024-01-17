@@ -6,10 +6,9 @@ class Input {
     private Coordinate coordinate;
     private Command command;
     private String message;
-    private Field field;
 
     Input(int x, int y, String word) {
-        field = Field.getInstance();
+        Field field = Field.getInstance();
         state = State.bad;
         if (x < 1 || y < 1) {
             message = "Coordinates must be positive.";
@@ -22,10 +21,9 @@ class Input {
         }
 
         if (!field.getCell(coordinate).isUnexplored()) {
-            message = "The cell at the given coordinate is already explored"
+            message = "The cell at the given coordinate is already explored";
+            return;
         }
-        // todo stop mark explored
-        // todo stop explore explored
 
         if ("free".equals(word)) {
             command = Command.explore;

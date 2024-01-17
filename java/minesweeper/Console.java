@@ -13,11 +13,11 @@ public class Console {
      * @return - number of mines
      */
     static int readNumberOfMines() {
-        int number;
-        do {
-            System.out.print("How many mines do you want on the field? ");
-            number = SCANNER.nextInt();
-        } while (number < 0 || number > Field.WIDTH * Field.HEIGHT);
+        System.out.print("How many mines do you want on the field? ");
+        int number = SCANNER.nextInt();
+        if (number < 0 || number > Field.WIDTH * Field.HEIGHT) {
+            return readNumberOfMines();
+        }
         return number;
     }
 
