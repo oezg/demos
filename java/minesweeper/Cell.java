@@ -1,49 +1,102 @@
 package minesweeper;
 
-public class Cell {
+import java.util.List;
 
-    private boolean marked;
-    private boolean mined;
-    private int adjacentMines;
+class Cell {
 
-    {
-        marked = false;
-        mined = false;
-        adjacentMines = 0;
+    private Mine mine;
+    private int cardinality;
+
+    private State state;
+
+    private final Coordinate coordinate;
+    private final Field field;
+
+    Cell(Field field, Coordinate coordinate) {
+        this.field = field;
+        this.coordinate = coordinate;
+        mine = null;
+        setState(State.unmarked);
     }
 
-    public boolean isMarked() {
-        return marked;
+    State getState() {
+        return state;
     }
 
-    public boolean isMined() {
-        return mined;
+    void setState(State state) {
+        this.state = state;
     }
 
-    public void mine() {
-        this.mined = true;
+    int getCardinality() {
+        return cardinality;
     }
 
-    public int getAdjacentMines() {
-        return adjacentMines;
+    void setCardinality(int cardinality) {
+        this.cardinality = cardinality;
     }
 
-    public void setAdjacentMines(int adjacentMines) {
-        this.adjacentMines = adjacentMines;
+    boolean hasMinesAround() {
+        return getCardinality() > 0;
     }
 
-    @Override
-    public String toString() {
-        if (isMarked()) {
-            return "*";
-        } else if (!isMined() && getAdjacentMines() > 0) {
-            return String.valueOf(getAdjacentMines());
-        } else {
-            return ".";
+    boolean isMined() {
+        return mine != null;
+    }
+
+    Mine mine() {
+        mine = new Mine();
+        return mine;
+    }
+
+    String show(boolean withMine) {
+        return switch (getState()) {
+            case explored -> hasMinesAround() ? Integer.toString(getCardinality()) : "/";
+            case marked -> withMine && isMined() ? "X" : "*";
+            case unmarked -> withMine && isMined() ? "X" : ".";
+        };
+    }
+
+    void mark() {
+        switch (getState()) {
+            case marked -> {
+                setState(State.unmarked);
+                if (mine != null) {
+                    mine.setMarked(false);
+                }
+            }
+            case unmarked -> {
+                setState(State.marked);
+                if (mine != null) {
+                    mine.setMarked(true);
+                }
+            }
+            case explored -> throw new IllegalArgumentException("An explored cell cannot be marked!");
         }
     }
 
-    public void mark() {
-        marked = !marked;
+    Mine explore() {
+        if (isUnexplored() && !isMined()) {
+            setState(State.explored);
+            var neighbors = neighbors();
+            setCardinality((int)neighbors.stream().filter(Cell::isMined).count());
+            if (!hasMinesAround()) {
+                neighbors.forEach(Cell::explore);
+            }
+        }
+        return mine;
+    }
+
+    boolean isUnexplored() {
+        return getState() != State.explored;
+    }
+
+    List<Cell> neighbors() {
+        return coordinate.neighbors(field).stream().map(field::getCell).toList();
+    }
+
+    enum State {
+        explored,
+        marked,
+        unmarked
     }
 }

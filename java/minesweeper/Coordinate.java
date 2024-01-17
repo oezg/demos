@@ -1,33 +1,33 @@
 package minesweeper;
 
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
-public class Coordinate {
-    private final int row;
-    private final int col;
-
-    Coordinate(int x, int y) {
-        row = y;
-        col = x;
+record Coordinate(int row, int col) {
+    private static final Random RANDOM = new Random();
+    static Coordinate createRandom() {
+        return new Coordinate(RANDOM.nextInt(Field.HEIGHT), RANDOM.nextInt(Field.WIDTH));
+    }
+    List<Coordinate> neighbors(Field field) {
+        Coordinate[] neighbors = {
+                new Coordinate(-1, -1),
+                new Coordinate(-1, 0),
+                new Coordinate(-1, 1),
+                new Coordinate(0, -1),
+                new Coordinate(0, 1),
+                new Coordinate(1, -1),
+                new Coordinate(1, 0),
+                new Coordinate(1, 1),
+        };
+        return Arrays.stream(neighbors).map(this::add).filter(Coordinate::isValid).toList();
     }
 
-    public int getCol() {
-        return col;
+    Coordinate add(Coordinate other) {
+        return new Coordinate(row() + other.row(), col() + other.col());
     }
 
-    public int getRow() {
-        return row;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Coordinate that)) return false;
-        return getRow() == that.getRow() && getCol() == that.getCol();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getRow(), getCol());
+    boolean isValid() {
+        return row() < Field.HEIGHT && row() >= 0 && col() < Field.WIDTH && col() >= 0;
     }
 }

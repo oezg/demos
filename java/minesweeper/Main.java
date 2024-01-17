@@ -2,21 +2,14 @@ package minesweeper;
 
 public class Main {
 
-    private static final Game game;
-    private static final Console console;
-
-    static {
-        game = new Game();
-        console = new Console();
-    }
+    private static final Game game = new Game();;
 
     public static void main(String[] args) {
-        game.begin(console.readNumberOfMines());
-        console.printField();
-        while (!game.isOver()) {
-            game.mark(console.readCoordinates());
-            console.printField();
+        game.initialize(Console.readNumberOfMines());
+        while (game.isNotOver()) {
+            Console.printField();
+            game.handle(Console.readInput());
         }
-        console.congratulate();
+        Console.endGame(game.getState());
     }
 }

@@ -1,36 +1,52 @@
 package minesweeper;
 
-import java.util.*;
-
 public class Game {
 
-    private final Field field = Field.getInstance();
-    private Coordinate[] mineCoordinates;
-    private final Set<Coordinate> markedCoordinates;
+    final Field field;
+
+    private State state;
+
+    State getState() {
+        return state;
+    }
+
+    void setState(State state) {
+        this.state = state;
+    }
 
     public Game() {
-        markedCoordinates = new HashSet<>();
+        state = State.unchanged;
+        field = Field.getInstance();
     }
 
-    public void begin(int numberOfMines) {
-        mineCoordinates = field.mine(numberOfMines);
-        field.update();
+    void initialize(int numberOfMines) {
+        field.setMines(numberOfMines);
     }
 
-
-    public void mark(Coordinate coordinate) {
-        field.mark(coordinate);
-        if (!markedCoordinates.add(coordinate)) {
-            markedCoordinates.remove(coordinate);
+    void handle(Input input) {
+        Cell cell = field.getCell(input.coordinate());
+        if (input.isMark()) {
+            cell.mark();
+            if (field.areAllMinesMarked()) {
+                setState(State.win);
+            }
+        } else {
+            if (cell.explore() != null) {
+                setState(State.loose);
+            }
+            if (field.areAllSafeCellsExplored()) {
+                setState(State.win);
+            }
         }
     }
 
-    public boolean isOver() {
-        if (mineCoordinates.length != markedCoordinates.size()) {
-            return false;
-        }
+    public boolean isNotOver() {
+        return getState() == State.unchanged;
+    }
 
-        return Arrays.stream(mineCoordinates)
-                .allMatch(markedCoordinates::contains);
+    enum State {
+        win,
+        loose,
+        unchanged
     }
 }
